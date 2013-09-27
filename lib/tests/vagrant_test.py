@@ -3,7 +3,7 @@ import util
 def library_test():
 	"""Tests for the existence of the vagrant python library."""
 	minimum_version = "0.4.0"
-	util.module_version_check(minimum_version, "vagrant")
+	util.module_version_check(minimum_version, "vagrant", "python-vagrant")
 
 def executable_test():
 	import vagrant
