@@ -14,8 +14,7 @@ def check(ctx):
 		vagrant_test.test()
 		virtualbox_test.test()
 	except Exception as inst:
-		print "####"
+		print '\033[0;31m'
 		print inst
-		print "####"
+		print '\033[0m'
 		exit(1)
-
