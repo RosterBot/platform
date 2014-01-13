@@ -1,0 +1,44 @@
+ - hosts: jenkins
+   name: install jenkins
+   vars_prompt:
+    - name: jenkins_default_user_api_token
+      prompt: 'API token'
+      default: DJtAMI3d19LbgyioNOGK777MvNP8p7BJHIIXvfgLC35oj7io7FQHl5g7AXeWpmVW
+      private: no
+    - name: jenkins_host_name
+      prompt: "FQDN host name"
+      default: localhost
+      private: no
+    - name: jenkins_default_user_private_key
+      prompt: 'Default user SSH private key path'
+      default: ../lib/roles/jenkins/files/private_jenkins_key_rsa
+      private: no
+    - name: jenkins_default_user_public_key
+      prompt: 'Default Public key path'
+      default: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDK8+MlF4m5yotTveCnmrcIj7Rko3PMhwoynlsESeXUMNQqNNM+yA6n+W3vTjO1xc+0h9QmTYtRRqgcKy7Br+TM/XoYbsqB7iqziSRcSQsIYslse8lOxQOP8ECMmtXoHdK2tfLocGNWc018P72PUyJWwUKv/DO0FjW8Gjb6qljD+nnh+XQV8eOvWSuTudVFy7Vsy4l1U4MI1yF42VZsHxYHE7tPUh0suEIMHNBqPDwHIyF+vEPgMmFsyUkD4OFxxzDRDGcXa1X/Dx/CW3EjixIFoz61pWVQlbGt8+AtW2l/XpUegj558z3GmIflRbDNwyExrkMXkUe9z06YbwGe9bptmzhw8cmzgT0xCUHmpMvaqF43/Io3bCyfNoHFdr+WTyWZ58NCt70OoLcKMGQG+M0ZxM7S5TTfrgYsmbspMCbVkUz4dsEZ3XXZTg4y2ktXx3ZInVEPNamwPXWk+7ZCszBnlShVuULXbKOh8zbboZM8M3uIUa7F3gfqxPqk+7b67BHMStPizUjNzvdwHVWKmhZ6Xn01Xk12utvaFtDXZwfj1f5Cm068bb990RYKQ4xIVYHePt0tzOyQ3uLdWLUmGKTDdvfL2sVy95Qsm2tgks3TftUkI2UwXKomOb2i3aUjytNG+oMz1OlBXD/6tgHPgUsJhrjCVmsj6oxN5we6oZgMhQ==
+      private: no
+    - name: jenkins_use_self_signed_certificate
+      default: true
+      prompt: "Use self-signed certificate (if you say yes to this, then the next two variables won't be used)"
+      private: no
+    - name: jenkins_certificate_path
+      prompt: 'Local path to ssl certificate'
+      private: no
+    - name: jenkins_certificate_key_path
+      prompt: 'Local path to ssl certificate private key'
+      private: no
+    - name: jenkins_use_mail_relay_host
+      prompt: "Use a mail relay host to send outgoing mail (if you leave this blank then the next two don't matter)"
+      default: false
+      private: no
+    - name: jenkins_mail_relay_host
+      prompt: "Mail relay host domain name"
+      private: no
+    - name: jenkins_mail_relay_smtp_username
+      prompt: 'Mail relay host user name'
+      private: no
+    - name: jenkins_mail_relay_host_smtp_password
+      prompt: 'Mail relay host password'
+      private: no
+   roles:
+    - ../../lib/roles/jenkins
