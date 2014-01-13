@@ -1,5 +1,6 @@
 import util
 
+
 def test():
     """Tests for the existence of the ansible program."""
     minimum_version = "1.4.0"

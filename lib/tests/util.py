@@ -9,6 +9,7 @@ def compare_versions(minimum, current, program_name):
     # all good.
     print "\tGood, " + current + " is greater than " + minimum
 
+
 def module_version_check(minimum_version, program_name, readable_name=None):
     """Tests for the existence of a particular version of a library."""
     printable_name = program_name
