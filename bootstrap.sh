@@ -7,3 +7,5 @@ source .env/bin/activate
 pip install boto
 pip install ansible
 pip install python_vagrant
+echo "Now run \"source .env/bin/activate\""
+echo "Then run \"./platform configure\""
