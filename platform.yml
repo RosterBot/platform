@@ -1,0 +1,50 @@
+%YAML 1.1
+---
+Users:
+  - 
+    Name: ed
+    Public Key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCgsVoLDV1uVwLRFzYRlOiaeh0TZgAOELvy9mUgtfSDszGsPeZbHjvJAfjQZahV+r12z8XlLnzpUggdTDAoJjG5s7z1v0/cpUe02TKVuFoejgp4qGDZUOopfkKEnqvwN2m0Ms+7QNoZxOU5QHB0sBde31Bixx56uN4omYvJlxI83CWKyBoe1Z8r96kGhpxQW4ciuyG+dNuafFGsBzJNcWmac4k8MCDZtx8m/6sw0NJW2U+ocfX2SWmBOpa38SQ5PrDQlETb0UzdBbLRdE1kVSwTI5WazREwhF1HZOcQkiFu6YHde2jGo/YR+DFnvoufngQmO5W6YL/eoBasl0grLXZUhJkDTrneujctTp3PJoWqsfB8qkVerbFcaNK1QaoM6dEPf+fqC5D96yVANGiubb4GtQZU2jlQSuoayzXW43D2uEkki6bTP3Pz1AyQwMUlrFRUfcBFb9+N3RJOOGDd3BNf59Mc7+XhXHToABWp8uBWt9R0EYfdy0lkBYZfGr4g7Kqe1pTG4YkiUzJkJRJqe9A7fxWvDczQrXWqZKqkAxOdk/N/illQ9rsFty3hOLVibezTBVoxtxAFUjg4qGCm4EUb+lIZvpPwPUn5MvvrVuCbhBKGr4S/C7YJNZcBosfbRLNehm8Gm1dfESBPxRVeZp2mpwdVaR21itQE289AI4fX8w==
+  - 
+    Name: Bob
+    Public Key: shom
+Infrastructure:
+  VPC:
+    Name: Demo
+    IP Range: 10.0.0.0/16
+    Subnets:
+      -
+        Type: Public
+        IP Count: 256
+        Role Type: management
+        Name: management1
+      - 
+        Type: Public
+        IP Count: 1024
+        Role Type: balancer
+        Name: balancer1
+      -
+        Type: Private
+        IP Count: 4096
+        Role Type: web
+        Name: web1
+      - 
+        Type: Private
+        IP Count: 4096
+        Role Type: database
+        Name: db1
+      - 
+        Type: Private
+        IP Count: 4096
+        Role Type: worker
+        Name: worker1
+      -
+        Type: Private
+        IP Count: 512
+        Role Type: broker
+        Name: broker1
+      -
+        Type: Public
+        IP Count: 256
+        Role Type: nat
+        Name: nat1
+
