@@ -6,6 +6,7 @@ import yaml
 from lib import AWS
 from lib import glue
 
+
 APPNAME = 'Platform'
 VERSION = '0.0.1'
 
@@ -14,22 +15,18 @@ def options(ctx):
     """Configuration step for the platform."""
     ctx.add_option('--skip-local-check', action='store', default=False, help='Skip vagrant and VirtualBox checks.')
 
-def fuckwithansible(ctx):
-    glue.hack(["--version"])
 
 def configure(ctx):
     """Configure step for the platform."""
-    # ctx.check()
     ctx.env.platform = yaml.load(open('platform.yml'))
-    # print ctx.env.platform
-    if ctx.env.platform["Infrastructure"]["VPC"]:
-        AWS.build_vpc_template(ctx.env.platform["Infrastructure"]["VPC"])
-
 
 
 def build(ctx):
     """Build step for the platform."""
-    pass
+    ctx(rule=AWS.generate_vpc_template, source='platform.yml', target='vpc_template.json')
+    ctx(rule=AWS.generate_vpc_playbook, source='vpc_template.json', target='vpc.playbook')
+    ctx(rule=AWS.create_management_host, source='vpc.playbook', target='management.playbook')
+    ctx(rule=glue.run_ansible, source=['vpc.playbook', 'management.playbook'])
 
 
 @conf

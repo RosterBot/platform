@@ -1,3 +1,3 @@
 __author__ = 'invoked'
 
-from ansiblehack import hack
+from ansible_glue import run_ansible_in_python as run_ansible

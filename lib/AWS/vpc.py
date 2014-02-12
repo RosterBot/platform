@@ -12,20 +12,25 @@ import netaddr
 ## then create private subnet route tables using the nat instance's network interface
 
 
-def build_vpc_step1():
-    print "step1"
-
-
 def build_vpc_template(vpc_config):
     vpc = ec2.VPC(name=vpc_config["Name"], CidrBlock=vpc_config["IP Range"])
+
     vpc.Tags = [{"Key": "Application", "Value": Ref("AWS::StackId")}]
+
     vpc_config["Subnets"].sort(key=lambda net: net["IP Count"], reverse=True)
+
     subnets = build_subnets(vpc_config["Subnets"], vpc_config["IP Range"], vpc_config["Name"])
+    private_route_table = build_private_route_table(vpc_config["Name"])
+    public_route_table = build_public_route_table(vpc_config["Name"])
+
     [subnet.Tags.append(vpc.Tags[0]) for subnet in subnets]
     t = Template()
     t.add_resource(vpc)
+    t.add_resource(private_route_table)
+    t.add_resource(public_route_table)
     [t.add_resource(subnet) for subnet in subnets]
-    print(t.to_json())
+    [t.add_resource(gateway_attachments) for gateway_attachments in build_public_gateway(vpc_config["Name"])]
+    return t
 
 
 def calculate_cidr_prefix(num_of_ips):
@@ -67,7 +72,21 @@ def build_subnets(subnets, ip_range, vpc):
     return map(create_vpc_subnet, list(enumerate(subnets)))
 
 def build_private_route_table(vpc):
-    private_table = ec2.RouteTable(name="Private Table")
+    private_table = ec2.RouteTable(name="PrivateRouteTable")
     private_table.Tags = [{"Key": "Network", "Value": "Private"}, {"Key": "Application", "Value": Ref("AWS::StackId")}]
     private_table.VpcId = Ref(vpc)
     return private_table
+
+def build_public_route_table(vpc):
+    public_table = ec2.RouteTable(name="PublicRouteTable")
+    public_table.Tags = [{"Key": "Network", "Value": "Private"}, {"Key": "Application", "Value": Ref("AWS::StackId")}]
+    public_table.VpcId = Ref(vpc)
+    return public_table
+
+def build_public_gateway(vpc):
+    public_gateway = ec2.InternetGateway(name="InternetGateway",Tags=[{"Key": "Application", "Value": Ref("AWS::StackId")}])
+    attachment = ec2.VPCGatewayAttachment(name="AttachInternetGateway",VpcId=Ref(vpc),InternetGatewayId=Ref(public_gateway))
+    return [attachment, public_gateway]
+
+def create_security_group(vpc, ports=list()):
+    group = ec2.SecurityGroup()
