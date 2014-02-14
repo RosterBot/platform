@@ -35,7 +35,7 @@ def generate_vpc_playbook(task):
     task.outputs[0].write(yam)
 
 
-def create_management_host(task):
+def create_management_host_playbook(task):
     management_role = [role for role in task.env.platform["Infrastructure"]["Role Types"]
                        if role["Name"] == 'management'][0]
 

@@ -17,11 +17,11 @@ def run_ansible_in_python(task):
     localhost.set_variable('ansible_python_interpreter', sys.executable)
     all_group = Group('all')
     all_group.add_host(localhost)
-    ec2_inventory = InventoryScript(filename='lib/glue/ec2.py')
     inventory = Inventory(None)
-    inventory.parser = ec2_inventory
-    inventory.groups = ec2_inventory.groups.values()
     inventory.add_group(all_group)
+    ec2_inventory = InventoryScript(filename='lib/glue/ec2.py')
+    inventory.parser = ec2_inventory
+    [inventory.add_group(group) for group in ec2_inventory.groups.values()]
     ## end
 
     pb = playbook.PlayBook(playbook=task.inputs[0].abspath(),
