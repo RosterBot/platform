@@ -4,11 +4,11 @@ Users:
   - 
     Name: ed
     Public Key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCgsVoLDV1uVwLRFzYRlOiaeh0TZgAOELvy9mUgtfSDszGsPeZbHjvJAfjQZahV+r12z8XlLnzpUggdTDAoJjG5s7z1v0/cpUe02TKVuFoejgp4qGDZUOopfkKEnqvwN2m0Ms+7QNoZxOU5QHB0sBde31Bixx56uN4omYvJlxI83CWKyBoe1Z8r96kGhpxQW4ciuyG+dNuafFGsBzJNcWmac4k8MCDZtx8m/6sw0NJW2U+ocfX2SWmBOpa38SQ5PrDQlETb0UzdBbLRdE1kVSwTI5WazREwhF1HZOcQkiFu6YHde2jGo/YR+DFnvoufngQmO5W6YL/eoBasl0grLXZUhJkDTrneujctTp3PJoWqsfB8qkVerbFcaNK1QaoM6dEPf+fqC5D96yVANGiubb4GtQZU2jlQSuoayzXW43D2uEkki6bTP3Pz1AyQwMUlrFRUfcBFb9+N3RJOOGDd3BNf59Mc7+XhXHToABWp8uBWt9R0EYfdy0lkBYZfGr4g7Kqe1pTG4YkiUzJkJRJqe9A7fxWvDczQrXWqZKqkAxOdk/N/illQ9rsFty3hOLVibezTBVoxtxAFUjg4qGCm4EUb+lIZvpPwPUn5MvvrVuCbhBKGr4S/C7YJNZcBosfbRLNehm8Gm1dfESBPxRVeZp2mpwdVaR21itQE289AI4fX8w==
-    root: yes
+    root: true
   - 
     Name: Bob
     Public Key: shom
-    root: no
+    root: false
 Infrastructure:
   Region: us-west-2
   Default AMI: ami-927613a2
@@ -17,19 +17,22 @@ Infrastructure:
      Name: management
      Instance Type: t1.micro
      Key: ed.epstein@invokelabs.com
+     ASG: false
+     Instance Count: 1
     -
      Name: nat
      Instance Type: t1.micro
      Key: ed.epstein@invokelabs.com
+     ASG: false
   VPC:
-    Name: Demo
+    Name: Demo4
     IP Range: 10.0.0.0/16
     Subnets:
       -
         Type: Public
         IP Count: 256
         Role Type: management
-        Name: management1
+        Name: management2
       - 
         Type: Public
         IP Count: 1024

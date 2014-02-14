@@ -11,6 +11,10 @@ APPNAME = 'Platform'
 VERSION = '0.0.1'
 
 
+def generate_final_playbook(task):
+    task.outputs[0].write("\n\n".join([file(play.abspath()).read() for play in task.inputs]))
+
+
 def options(ctx):
     """Configuration step for the platform."""
     ctx.add_option('--skip-local-check', action='store', default=False, help='Skip vagrant and VirtualBox checks.')
@@ -26,7 +30,8 @@ def build(ctx):
     ctx(rule=AWS.generate_vpc_template, source='platform.yml', target='vpc_template.json')
     ctx(rule=AWS.generate_vpc_playbook, source='vpc_template.json', target='vpc.playbook')
     ctx(rule=AWS.create_management_host, source='vpc.playbook', target='management.playbook')
-    ctx(rule=glue.run_ansible, source=['vpc.playbook', 'management.playbook'])
+    ctx(rule=generate_final_playbook, source=['vpc.playbook', 'management.playbook'], target='platform.playbook')
+    ctx(rule=glue.run_ansible, source='platform.playbook')
 
 
 @conf
