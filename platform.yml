@@ -32,7 +32,7 @@ Infrastructure:
         Type: Public
         IP Count: 256
         Role Type: management
-        Name: management2
+        Name: management1
       - 
         Type: Public
         IP Count: 1024

@@ -27,7 +27,8 @@ def generate_vpc_playbook(task):
                         + task.inputs[0].abspath() +
                         ' region='
                         + task.env.platform["Infrastructure"]["Region"],
-                'register': 'vpc'
+                'register': 'vpc',
+                'ignore_errors': True
             }
         ]}
     vpc_stack_play.update(default_local_play)
@@ -35,47 +36,82 @@ def generate_vpc_playbook(task):
     task.outputs[0].write(yam)
 
 
-def create_management_host_playbook(task):
-    management_role = [role for role in task.env.platform["Infrastructure"]["Role Types"]
-                       if role["Name"] == 'management'][0]
-
+def _create_management_hosts(management_role, task, vpc_name):
     tasks = list()
     for i in range(management_role["Instance Count"]):
         tasks.append({
-            'name': 'Creating Management Host Into VPC: ' + task.env.platform["Infrastructure"]["VPC"]["Name"],
+            'name': 'Creating Management Host Into VPC: ' + vpc_name,
             'action': {
                 'module': 'ec2',
-                'id': 'management-' + task.env.platform["Infrastructure"]["VPC"]["Name"] + "-" + str(i),
+                'id': vpc_name + '-management-' + str(i),
                 'image': task.env.platform["Infrastructure"]["Default AMI"],
                 'instance_type': management_role["Instance Type"],
                 'key_name': management_role["Key"],
                 'region': task.env.platform["Infrastructure"]["Region"],
-                'instance_tags': {"Role": management_role["Name"], "Name": management_role["Name"] + str(i)},
+                'instance_tags': {
+                    "Role": vpc_name + '_' + management_role["Name"],
+                    "Name": vpc_name + '_' + management_role["Name"] + str(i)
+                },
                 'wait': True,
                 'group_id': ['{{ vpc.stack_outputs.SSHFromAnywhere }}', '{{ vpc.stack_outputs.defaultSG }}'],
-                'vpc_subnet_id': '{{ vpc.stack_outputs.management2 }}',
+                'vpc_subnet_id': '{{ vpc.stack_outputs.'
+                                 + [management_subnet["Name"]
+                                    for management_subnet in task.env.platform["Infrastructure"]["VPC"]["Subnets"]
+                                    if management_subnet["Role Type"] == "management"][0] +
+                                 ' }}',
                 'assign_public_ip': True  # this is sort of a temporary hack I presume.
             },
-            'register': 'management_ec2_' + str(i)
+            'register': 'management_ec2_' + str(i),
+            'when': 'vpc.stack_outputs is defined'
         })
-        # tasks.append({
-        #     'name': 'Create an EIP for Management host.',
-        #     'action': {
-        #         'module': 'ec2_eip',
-        #         'in_vpc': True,
-        #         'instance_id': '{{  management_ec2_' + str(i) + '.instance_ids[0] }}',
-        #         'region': task.env.platform["Infrastructure"]["Region"]
-        #     }
-        # })
+        tasks.append({
+            'name': 'Add management hosts to inventory.',
+            'action': {
+                'module': 'add_host',
+                'hostname': '{{ item.public_ip }}',
+                'groupname': management_role["Name"]
+            },
+            'with_items': 'management_ec2_' + str(i) + '.instances',
+            'when': 'management_ec2_' + str(i) + '.instances is defined'
+        })
+        tasks.append({
+            'name': 'Sleep until SSH is available.',
+            'action': {
+                'module': 'wait_for',
+                'host': '{{ item.public_ip }}',
+                'port': '22',
+                'state': 'started'
+            },
+            'with_items': 'management_ec2_' + str(i) + '.instances',
+            'when': 'management_ec2_' + str(i) + '.instances is defined'
+        })
+    return tasks
+
+
+def generate_management_host_playbook(task):
+    management_roles = [role for role in task.env.platform["Infrastructure"]["Role Types"]
+                        if role["Name"] == 'management']
+
+    if len(management_roles) != 1:
+        raise RuntimeError('You may only specify a single management role type.')
+
+    management_role = management_roles[0]
+    vpc_name = task.env.platform["Infrastructure"]["VPC"]["Name"]
+
+    tasks = _create_management_hosts(management_role, task, vpc_name)
+
+    apply_management_role_play = {
+        'name': 'Apply management role to management hosts.',
+        'hosts': ['tag_Role_' + vpc_name + '_' + management_role["Name"], management_role["Name"]],
+        'gather_facts': True,
+        'sudo': True,
+        'user': 'ubuntu',
+        'roles': ['../../lib/roles/common']
+    }
 
     management_host_play = {
         'tasks': tasks
     }
     management_host_play.update(default_local_play)
-    yam = yaml.dump([management_host_play])
+    yam = yaml.dump([management_host_play, apply_management_role_play])
     task.outputs[0].write(yam)
-
-
-
-
-

@@ -29,7 +29,7 @@ def build(ctx):
     """Build step for the platform."""
     ctx(rule=AWS.generate_vpc_template, source='platform.yml', target='vpc_template.json')
     ctx(rule=AWS.generate_vpc_playbook, source='vpc_template.json', target='vpc.playbook')
-    ctx(rule=AWS.create_management_host_playbook, source='vpc.playbook', target='management.playbook')
+    ctx(rule=AWS.generate_management_host_playbook, source='vpc.playbook', target='management.playbook')
     ctx(rule=generate_final_playbook, source=['vpc.playbook', 'management.playbook'], target='platform.playbook')
     ctx(rule=glue.run_ansible, source='platform.playbook')
 

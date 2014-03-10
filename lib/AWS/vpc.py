@@ -18,32 +18,35 @@ def build_vpc_template(vpc_config):
                   CidrBlock=vpc_config["IP Range"],
                   Tags=vpc_tags)
 
-    vpc_config["Subnets"].sort(key=lambda net: net["IP Count"], reverse=True)
+    t = Template()
 
+    vpc_config["Subnets"].sort(key=lambda net: net["IP Count"], reverse=True)
     subnets = build_subnets(vpc_config["Subnets"], vpc_config["IP Range"], vpc_config["Name"])
+    [subnet.Tags.append(vpc.Tags[0]) for subnet in subnets]
+
     private_route_table = build_private_route_table(vpc_config["Name"])
     public_route_table = build_public_route_table(vpc_config["Name"])
 
-    [subnet.Tags.append(vpc.Tags[0]) for subnet in subnets]
-    t = Template()
     t.add_resource(vpc)
     t.add_resource(private_route_table)
     t.add_resource(public_route_table)
+    t.add_resource(build_public_route())
+    [t.add_resource(public_route_table_association)
+     for public_route_table_association in build_public_route_table_associations(vpc_config["Subnets"])]
+
     [t.add_resource(subnet) for subnet in subnets]
     [t.add_resource(gateway_attachments) for gateway_attachments in build_public_gateway(vpc_config["Name"])]
     management_group = build_management_security_group(vpc_config["Name"])
     t.add_resource(management_group[0])
-    t.add_output(management_group[1])
-
     default_group = build_default_security_group(vpc_config["Name"])
     t.add_resource(default_group[0])
     t.add_resource(default_group[1])
-    t.add_output(default_group[2])
 
+    t.add_output(management_group[1])
+    t.add_output(default_group[2])
     t.add_output(Output(name="vpcId", Value=Ref(vpc_config["Name"])))
     [t.add_output(Output(name=subnet.name, Value=Ref(subnet.name))) for subnet in subnets]
-    [t.add_resource(public_route_table_association)
-     for public_route_table_association in build_public_route_table_associations(vpc_config["Subnets"])]
+
     return t
 
 
@@ -105,7 +108,7 @@ def build_public_route_table(vpc):
     return public_table
 
 
-def build_public_route(vpc):
+def build_public_route():
     public_route = ec2.Route(name="PublicRoute",
                              RouteTableId=Ref("PublicRouteTable"),
                              DestinationCidrBlock="0.0.0.0/0",
@@ -115,12 +118,12 @@ def build_public_route(vpc):
 
 
 def build_public_route_table_associations(public_subnets):
-    public_route_tabl_associations = [ec2.SubnetRouteTableAssociation(name=public_subnet["Name"]
+    public_route_table_associations = [ec2.SubnetRouteTableAssociation(name=public_subnet["Name"]
                                                                       + "PublicRouteTableAssociation",
                                                                       SubnetId=Ref(public_subnet["Name"]),
                                                                       RouteTableId=Ref("PublicRouteTable"))
                                       for public_subnet in public_subnets if public_subnet["Type"] is "Public"]
-    return public_route_tabl_associations
+    return public_route_table_associations
 
 
 

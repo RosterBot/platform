@@ -3,6 +3,7 @@ from ansible import playbook
 from ansible.inventory import Host, Inventory, Group, InventoryScript
 import ansible.callbacks as callbacks
 import sys
+import os
 
 
 def run_ansible_in_python(task):
@@ -19,6 +20,7 @@ def run_ansible_in_python(task):
     all_group.add_host(localhost)
     inventory = Inventory(None)
     inventory.add_group(all_group)
+    os.putenv('EC2_INI_PATH', 'lib/glue/ec2-external.ini')
     ec2_inventory = InventoryScript(filename='lib/glue/ec2.py')
     inventory.parser = ec2_inventory
     [inventory.add_group(group) for group in ec2_inventory.groups.values()]
