@@ -5,3 +5,4 @@ sandbox/*
 .idea/*
 lib/contrib/virtualenv-*/
 .env/*
+.lock-*
